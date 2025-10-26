@@ -6,6 +6,12 @@ An interactive web application that uses AI to break down complex processes into
 
 https://youtu.be/QDXfnKTdXps
 
+
+Uploading DemoYC-2.mp4…
+
+
+
+
 ## ✨ Features
 
 - **AI-Powered Process Breakdown**: Converts any process query into 5 educational stages
