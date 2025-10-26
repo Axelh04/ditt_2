@@ -7,8 +7,8 @@ This guide will help you deploy your DITT application to Render with both fronte
 1. A [Render account](https://render.com/) (free tier available)
 2. Your GitHub repository connected to Render
 3. API Keys:
-   - [Google Gemini API Key](https://aistudio.google.com/app/apikey)
-   - [ElevenLabs API Key](https://elevenlabs.io/app/settings/api-keys)
+   - [Google Gemini API Key](https://aistudio.google.com/app/apikey) - **Required**
+   - [ElevenLabs API Key](https://elevenlabs.io/app/settings/api-keys) - **Optional** (only if you want to use ElevenLabs instead of free Piper TTS)
 
 ## Deployment Methods
 
@@ -41,10 +41,16 @@ This method uses the `render.yaml` file to deploy both services at once.
    - Add the following environment variables:
      ```
      GEMINI_API_KEY=your_actual_gemini_api_key
+     ```
+   - **Optional**: Only add `ELEVENLABS_API_KEY` if you want to use ElevenLabs instead of the free Piper TTS:
+     ```
      ELEVENLABS_API_KEY=your_actual_elevenlabs_api_key
+     TTS_PROVIDER=elevenlabs
      ```
    - Click **"Save Changes"**
    - The service will automatically redeploy
+   
+   **Note**: By default, the app uses **Piper TTS** (free, fast, no API key needed)! 🎉
 
 4. **Update Frontend Environment Variable**
    
@@ -99,8 +105,14 @@ If you prefer to set up each service manually:
    NODE_ENV=production
    PORT=3001
    GEMINI_API_KEY=your_gemini_api_key
-   ELEVENLABS_API_KEY=your_elevenlabs_api_key
+   TTS_PROVIDER=piper
    CORS_ORIGIN=https://ditt-frontend.onrender.com
+   ```
+   
+   **Optional**: To use ElevenLabs instead of Piper:
+   ```
+   TTS_PROVIDER=elevenlabs
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key
    ```
 
 3. **Set Health Check**
@@ -192,7 +204,9 @@ Frontend static site remains free!
 | `NODE_ENV` | Yes | Environment mode | `production` |
 | `PORT` | No | Server port (auto-set by Render) | `3001` |
 | `GEMINI_API_KEY` | Yes | Google Gemini API key | `AIza...` |
-| `ELEVENLABS_API_KEY` | Yes | ElevenLabs API key | `sk_...` |
+| `TTS_PROVIDER` | No | TTS engine to use (default: `piper`) | `piper` or `elevenlabs` |
+| `ELEVENLABS_API_KEY` | No | Only needed if `TTS_PROVIDER=elevenlabs` | `sk_...` |
+| `PIPER_DIR` | No | Piper installation directory (auto-set) | `/opt/render/project/src/server/piper` |
 | `CORS_ORIGIN` | No | Allowed frontend origin | `https://ditt-frontend.onrender.com` |
 
 ### Frontend (`ditt-frontend`)
@@ -243,6 +257,18 @@ Frontend static site remains free!
 2. No quotes around API keys
 3. No trailing spaces
 4. Redeploy after adding variables
+
+### Piper TTS Installation Errors
+
+**Symptoms:** "Piper TTS is not installed" errors
+
+**Solutions:**
+1. Check build logs for Piper setup script errors
+2. Verify `scripts/setup-piper.sh` is executable
+3. Ensure build command includes `bash scripts/setup-piper.sh`
+4. Check that Render has internet access during build (~50MB download)
+
+**Fallback**: Set `TTS_PROVIDER=elevenlabs` and add `ELEVENLABS_API_KEY` to use ElevenLabs instead
 
 ### Cold Start Issues (Free Tier)
 
