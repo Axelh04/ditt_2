@@ -4,11 +4,11 @@ import { ApiError } from '../middleware/errorHandler.js';
 const ELEVEN_LABS_API_URL = 'https://api.elevenlabs.io/v1';
 
 function getElevenLabsApiKey(): string {
-  const ELEVEN_LABS_API_KEY = process.env.ELEVEN_LABS_API_KEY;
-  if (!ELEVEN_LABS_API_KEY) {
-    throw new ApiError(500, 'ELEVEN_LABS_API_KEY environment variable is not set');
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    throw new ApiError(500, 'ELEVENLABS_API_KEY environment variable is not set');
   }
-  return ELEVEN_LABS_API_KEY;
+  return apiKey;
 }
 
 // Using a default voice ID (Rachel - a pleasant female voice)

@@ -12,6 +12,16 @@ import { errorHandler } from './middleware/errorHandler.js';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Validate environment variables on startup
+console.log('🔍 Checking environment variables...');
+const hasGemini = !!process.env.GEMINI_API_KEY;
+const hasElevenLabs = !!process.env.ELEVENLABS_API_KEY;
+console.log(`  GEMINI_API_KEY: ${hasGemini ? '✅ Set' : '❌ Missing'}`);
+console.log(`  ELEVENLABS_API_KEY: ${hasElevenLabs ? '✅ Set' : '❌ Missing'}`);
+if (!hasGemini || !hasElevenLabs) {
+  console.warn('⚠️  Server will start but API calls will fail without valid keys!');
+}
+
 // Middleware
 app.use(cors({
   origin: process.env.CORS_ORIGIN || '*', // Allow all origins in development
