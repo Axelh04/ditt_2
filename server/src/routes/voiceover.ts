@@ -1,6 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { generateCombinedVoiceover as generateWithPiper, isPiperAvailable } from '../services/piperService.js';
-import { generateCombinedVoiceover as generateWithElevenLabs } from '../services/elevenLabsService.js';
+import { generateCombinedVoiceover } from '../services/elevenLabsService.js';
 import { ApiError } from '../middleware/errorHandler.js';
 
 export const voiceoverRouter = Router();
@@ -27,20 +26,7 @@ voiceoverRouter.post('/generate', async (req: Request, res: Response, next: Next
 
     console.log(`🎤 Generating voiceover for ${scripts.length} scripts`);
     
-    // Use Piper TTS by default (free, fast), fallback to ElevenLabs if configured
-    const usePiper = process.env.TTS_PROVIDER !== 'elevenlabs';
-    
-    let audioResult;
-    if (usePiper) {
-      if (!isPiperAvailable()) {
-        throw new ApiError(500, 'Piper TTS is not installed. Please run the setup script or set TTS_PROVIDER=elevenlabs');
-      }
-      console.log('🎙️ Using Piper TTS (FREE)');
-      audioResult = await generateWithPiper(scripts);
-    } else {
-      console.log('🎙️ Using ElevenLabs TTS');
-      audioResult = await generateWithElevenLabs(scripts);
-    }
+    const audioResult = await generateCombinedVoiceover(scripts);
     
     res.json(audioResult);
   } catch (error) {

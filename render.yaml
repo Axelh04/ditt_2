@@ -6,17 +6,13 @@ services:
     region: oregon
     plan: free
     rootDir: server
-    buildCommand: npm ci && bash scripts/setup-piper.sh && npm run build
+    buildCommand: npm ci && npm run build
     startCommand: npm run start
     envVars:
       - key: GEMINI_API_KEY
         sync: false
-      - key: ELEVENLABS_API_KEY
+      - key: HUME_API_KEY
         sync: false
-      - key: TTS_PROVIDER
-        value: piper
-      - key: PIPER_DIR
-        value: /opt/render/project/src/server/piper
     healthCheckPath: /api/health
 
   # Frontend React App

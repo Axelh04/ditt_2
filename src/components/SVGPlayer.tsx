@@ -69,7 +69,8 @@ export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete, onVoic
     };
 
     generateVoiceover();
-  }, [stages, onVoiceoverStart, onVoiceoverComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stages]); // Only depend on stages, callbacks are stable enough
 
   // Display initial SVG
   useEffect(() => {

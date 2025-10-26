@@ -15,16 +15,26 @@ const PORT = process.env.PORT || 3001;
 // Validate environment variables on startup
 console.log('🔍 Checking environment variables...');
 const hasGemini = !!process.env.GEMINI_API_KEY;
-const hasElevenLabs = !!process.env.ELEVENLABS_API_KEY;
+const hasHume = !!process.env.HUME_API_KEY;
 console.log(`  GEMINI_API_KEY: ${hasGemini ? '✅ Set' : '❌ Missing'}`);
-console.log(`  ELEVENLABS_API_KEY: ${hasElevenLabs ? '✅ Set' : '❌ Missing'}`);
-if (!hasGemini || !hasElevenLabs) {
+console.log(`  HUME_API_KEY: ${hasHume ? '✅ Set' : '❌ Missing'}`);
+if (!hasGemini || !hasHume) {
   console.warn('⚠️  Server will start but API calls will fail without valid keys!');
 }
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*', // Allow all origins in development
+  origin: (origin, callback) => {
+    // Allow all localhost origins in development
+    if (!origin || origin.startsWith('http://localhost:') || process.env.CORS_ORIGIN === '*') {
+      callback(null, true);
+    } else if (process.env.CORS_ORIGIN) {
+      // Production: only allow specified origin
+      callback(null, process.env.CORS_ORIGIN === origin);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -44,6 +54,6 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📡 CORS enabled for: ${process.env.CORS_ORIGIN || 'http://localhost:5173'}`);
+  console.log(`📡 CORS enabled for: All localhost origins in development`);
 });
 

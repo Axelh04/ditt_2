@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "setup-piper": "bash scripts/setup-piper.sh"
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@google/genai": "^1.27.0",

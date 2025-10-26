@@ -1,18 +1,15 @@
 import axios from 'axios';
 import { ApiError } from '../middleware/errorHandler.js';
 
-const ELEVEN_LABS_API_URL = 'https://api.elevenlabs.io/v1';
+const HUME_AI_API_URL = 'https://api.hume.ai/v0/tts';
 
-function getElevenLabsApiKey(): string {
-  const apiKey = process.env.ELEVENLABS_API_KEY;
+function getHumeApiKey(): string {
+  const apiKey = process.env.HUME_API_KEY;
   if (!apiKey) {
-    throw new ApiError(500, 'ELEVENLABS_API_KEY environment variable is not set');
+    throw new ApiError(500, 'HUME_API_KEY environment variable is not set');
   }
   return apiKey;
 }
-
-// Using a default voice ID (Rachel - a pleasant female voice)
-const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
 
 export type AudioSegment = {
   startTime: number;
@@ -27,87 +24,98 @@ export type CombinedAudioResult = {
 }
 
 /**
- * Get actual audio duration by creating a temporary audio context
- * This runs on the server side using a simpler estimation
- */
-function estimateAudioDuration(audioBuffer: Buffer, wordCount: number): number {
-  // MP3 typically has ~150 words per minute
-  // More accurate: use file size and bitrate
-  // For now, use word count estimation
-  return (wordCount / 150) * 60;
-}
-
-/**
  * Generates a single voiceover for multiple scripts and calculates time segments for each
  */
 export async function generateCombinedVoiceover(scripts: string[]): Promise<CombinedAudioResult> {
   console.time('⏱️ Combined Voiceover API Call');
   
   try {
-    // Combine scripts with pauses between them
-    const combinedText = scripts.join('... ... '); // Triple dots create a pause
+    console.log(`🎤 Generating voiceover with Hume AI for ${scripts.length} scripts`)
     
-    console.log(`📊 Generating voiceover for ${combinedText.length} characters (~${combinedText.length} credits)`)
+    // Create utterances with trailing silence for pauses between stages
+    const utterances = scripts.map((script, index) => ({
+      text: script,
+      trailing_silence: index < scripts.length - 1 ? 0.5 : 0 // 0.5 second pause between stages
+    }));
     
     const response = await axios.post(
-      `${ELEVEN_LABS_API_URL}/text-to-speech/${DEFAULT_VOICE_ID}`,
+      HUME_AI_API_URL,
       {
-        text: combinedText,
-        model_id: 'eleven_turbo_v2_5',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-        }
+        utterances,
+        format: { type: 'mp3' }
+        // Using Octave 1 (default) - no voice parameter needed
       },
       {
         headers: {
-          'Accept': 'audio/mpeg',
-          'xi-api-key': getElevenLabsApiKey(),
+          'X-Hume-Api-Key': getHumeApiKey(),
           'Content-Type': 'application/json',
-        },
-        responseType: 'arraybuffer'
+        }
       }
     );
 
-    const audioBuffer = Buffer.from(response.data);
+    // Hume AI returns JSON with base64 audio
+    const generation = response.data.generations[0];
+    const audioBase64 = generation.audio;
+    const totalDuration = generation.duration; // Duration in seconds
     
-    // Convert to base64 for JSON transmission
-    const audioBase64 = audioBuffer.toString('base64');
-    
-    // Calculate duration estimate
-    const wordCounts = scripts.map(script => script.split(/\s+/).length);
-    const totalWords = wordCounts.reduce((sum, count) => sum + count, 0);
-    const totalDuration = estimateAudioDuration(audioBuffer, totalWords);
-    
+    console.log(`✅ Generated audio: ${totalDuration.toFixed(2)}s`);
     console.timeEnd('⏱️ Combined Voiceover API Call');
     
-    // Calculate time segments based on word count proportions
-    const pauseDuration = 0.5;
-    const totalPauseDuration = pauseDuration * (scripts.length - 1);
-    const speakingDuration = totalDuration - totalPauseDuration;
-    
+    // Calculate time segments based on snippet timestamps
     const segments: AudioSegment[] = [];
-    let currentTime = 0;
+    const snippets = generation.snippets;
     
-    wordCounts.forEach((wordCount, index) => {
-      const segmentDuration = (wordCount / totalWords) * speakingDuration;
-      segments.push({
-        startTime: currentTime,
-        endTime: currentTime + segmentDuration,
-        duration: segmentDuration
+    if (snippets && snippets.length > 0) {
+      // Use actual snippet timestamps from Hume AI
+      snippets.forEach((utteranceSnippets: any[], index: number) => {
+        if (utteranceSnippets.length > 0) {
+          const firstSnippet = utteranceSnippets[0];
+          const lastSnippet = utteranceSnippets[utteranceSnippets.length - 1];
+          
+          // Get start time from first snippet's first timestamp
+          const startTime = firstSnippet.timestamps.length > 0 
+            ? firstSnippet.timestamps[0].time.begin / 1000 // Convert ms to seconds
+            : 0;
+          
+          // Get end time from last snippet's last timestamp
+          const endTime = lastSnippet.timestamps.length > 0
+            ? lastSnippet.timestamps[lastSnippet.timestamps.length - 1].time.end / 1000
+            : startTime;
+          
+          segments.push({
+            startTime,
+            endTime,
+            duration: endTime - startTime
+          });
+        }
       });
-      currentTime += segmentDuration;
+    } else {
+      // Fallback: estimate segments based on word count proportions
+      const wordCounts = scripts.map(script => script.split(/\s+/).length);
+      const totalWords = wordCounts.reduce((sum, count) => sum + count, 0);
+      const pauseDuration = 0.5;
+      const totalPauseDuration = pauseDuration * (scripts.length - 1);
+      const speakingDuration = totalDuration - totalPauseDuration;
       
-      if (index < scripts.length - 1) {
-        currentTime += pauseDuration;
-      }
-    });
+      let currentTime = 0;
+      wordCounts.forEach((wordCount, index) => {
+        const segmentDuration = (wordCount / totalWords) * speakingDuration;
+        segments.push({
+          startTime: currentTime,
+          endTime: currentTime + segmentDuration,
+          duration: segmentDuration
+        });
+        currentTime += segmentDuration;
+        
+        if (index < scripts.length - 1) {
+          currentTime += pauseDuration;
+        }
+      });
+    }
     
     console.log('📊 Audio segments:', segments.map((seg, i) => 
       `Stage ${i + 1}: ${seg.startTime.toFixed(2)}s - ${seg.endTime.toFixed(2)}s (${seg.duration.toFixed(2)}s)`
     ));
-    
-    console.log(`💰 Total credits used: ~${combinedText.length} (${scripts.length} stages combined)`);
     
     return {
       audioBase64,
@@ -118,49 +126,19 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
     console.error('Error generating combined voiceover:', error);
     
     if (axios.isAxiosError(error) && error.response) {
-      // Parse the error response from ElevenLabs
-      let errorMessage = error.message;
+      const errorData = error.response.data;
+      const errorMessage = errorData?.detail || errorData?.message || error.message;
       
-      try {
-        // ElevenLabs returns errors as JSON, but responseType is 'arraybuffer'
-        // so we need to convert the buffer to string first
-        let errorData = error.response.data;
-        
-        if (Buffer.isBuffer(errorData)) {
-          const jsonString = errorData.toString('utf-8');
-          errorData = JSON.parse(jsonString);
-        }
-        
-        // ElevenLabs error format: { detail: { status: "...", message: "..." } }
-        if (errorData?.detail) {
-          const detail = errorData.detail;
-          
-          if (typeof detail === 'string') {
-            errorMessage = detail;
-          } else if (detail.message) {
-            errorMessage = `${detail.status || 'Error'}: ${detail.message}`;
-          } else if (detail.status) {
-            errorMessage = `Status: ${detail.status}`;
-          }
-        } else if (errorData?.message) {
-          errorMessage = errorData.message;
-        } else if (errorData?.error) {
-          errorMessage = errorData.error;
-        }
-        
-        console.error('❌ ElevenLabs API Error:', {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          detail: errorData?.detail,
-          message: errorMessage
-        });
-      } catch (parseError) {
-        console.error('Error parsing ElevenLabs error response:', parseError);
-      }
+      console.error('❌ Hume AI API Error:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        message: errorMessage,
+        data: errorData
+      });
       
       throw new ApiError(
         error.response.status || 500,
-        `ElevenLabs API error (${error.response.status}): ${errorMessage}`
+        `Hume AI API error (${error.response.status}): ${errorMessage}`
       );
     }
     

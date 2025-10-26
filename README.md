@@ -6,11 +6,10 @@ An interactive web application that uses AI to break down complex processes into
 
 - **AI-Powered Process Breakdown**: Converts any process query into 5 educational stages
 - **Animated SVG Visualizations**: Smooth morphing transitions between process stages
-- **Synchronized Voiceovers**: Fast, free Piper TTS with low latency (ElevenLabs also supported)
+- **Synchronized Voiceovers**: ElevenLabs text-to-speech narration synchronized with animations
 - **Interactive Quizzes**: AI-generated questions to test understanding
 - **Real-time Caption Highlighting**: Word-by-word highlighting during narration
 - **Modern, Responsive UI**: Beautiful gradient backgrounds and smooth animations
-- **100% FREE Option**: Uses Piper TTS (no API costs) + Gemini AI (generous free tier)
 
 ## 🏗️ Architecture
 
@@ -18,7 +17,7 @@ This application follows modern software engineering best practices:
 
 - **Frontend**: React + TypeScript + Vite
 - **Backend**: Express + TypeScript
-- **AI Services**: Google Gemini AI + Piper TTS (free) / ElevenLabs (optional)
+- **AI Services**: Google Gemini AI + ElevenLabs
 - **Architecture**: Clean separation of concerns, optimized React components, secure API key handling
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed architecture documentation.
@@ -30,8 +29,8 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed architecture documentation
 - Node.js v18+
 - npm or yarn
 - API keys for:
-  - [Google Gemini AI](https://ai.google.dev/) - **Required**
-  - [ElevenLabs](https://elevenlabs.io/) - **Optional** (if you prefer ElevenLabs over free Piper TTS)
+  - [Google Gemini AI](https://ai.google.dev/)
+  - [ElevenLabs](https://elevenlabs.io/)
 
 ### Installation
 
@@ -44,9 +43,6 @@ npm install
 # Install backend dependencies
 cd server
 npm install
-
-# Set up Piper TTS (one-time setup, ~50MB download)
-npm run setup-piper
 cd ..
 ```
 
@@ -94,7 +90,7 @@ ditt_2/
 │   ├── services/                # API communication
 │   │   ├── apiClient.ts         # HTTP client
 │   │   ├── geminiService.ts     # Process generation
-│   │   └── elevenLabsService.ts # Frontend voiceover client
+│   │   └── elevenLabsService.ts # Voiceover generation
 │   ├── utils/                   # Utility functions
 │   │   ├── svgMorpher.ts       # SVG animation engine
 │   │   └── textProcessing.ts   # Text parsing utilities
@@ -103,11 +99,9 @@ ditt_2/
 ├── server/                       # Backend source
 │   ├── src/
 │   │   ├── routes/              # API endpoints
-│   │   ├── services/            # Business logic (Piper TTS, Gemini AI)
+│   │   ├── services/            # Business logic
 │   │   ├── middleware/          # Express middleware
 │   │   └── index.ts             # Server entry point
-│   ├── scripts/                 # Setup scripts
-│   │   └── setup-piper.sh       # Piper TTS installation
 │   └── .env                     # Backend configuration
 │
 ├── ARCHITECTURE.md              # Architecture documentation
@@ -150,10 +144,9 @@ npm run lint     # Run linter
 **Backend**:
 ```bash
 cd server
-npm run dev          # Start with auto-reload
-npm run build        # Build TypeScript
-npm run start        # Run production build
-npm run setup-piper  # Install Piper TTS (one-time)
+npm run dev      # Start with auto-reload
+npm run build    # Build TypeScript
+npm run start    # Run production build
 ```
 
 ## 🚢 Deployment
@@ -189,7 +182,6 @@ For detailed deployment instructions, see [RENDER_DEPLOYMENT.md](./RENDER_DEPLOY
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Detailed architecture and design decisions
 - [SETUP.md](./SETUP.md) - Comprehensive setup and troubleshooting guide
 - [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) - Complete deployment guide for Render
-- [TTS_SETUP.md](./TTS_SETUP.md) - Text-to-Speech setup and configuration (Piper TTS vs ElevenLabs)
 
 ## 🤝 Contributing
 
@@ -207,7 +199,6 @@ For detailed deployment instructions, see [RENDER_DEPLOYMENT.md](./RENDER_DEPLOY
 ## 🙏 Acknowledgments
 
 - Google Gemini AI for process generation
-- Piper TTS (Rhasspy) for free, fast, open-source text-to-speech
-- ElevenLabs for premium text-to-speech option
+- ElevenLabs for high-quality text-to-speech
 - React team for the amazing framework
 - Vite for the fast build tool
