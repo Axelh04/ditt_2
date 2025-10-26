@@ -1,7 +1,8 @@
-import { spawn } from 'child_process';
-import { writeFile, unlink, mkdir } from 'fs/promises';
+import { exec } from 'child_process';
+import { writeFile, unlink, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { promisify } from 'util';
 import { ApiError } from '../middleware/errorHandler.js';
 
 const PIPER_DIR = process.env.PIPER_DIR || join(process.cwd(), 'piper');
@@ -9,6 +10,8 @@ const PIPER_BINARY = join(PIPER_DIR, 'piper');
 const VOICE_MODEL = join(PIPER_DIR, 'models', 'en_US-lessac-medium.onnx');
 const VOICE_MODEL_JSON = join(PIPER_DIR, 'models', 'en_US-lessac-medium.onnx.json');
 const TEMP_DIR = join(process.cwd(), 'tmp');
+
+const execAsync = promisify(exec);
 
 export type AudioSegment = {
   startTime: number;
@@ -40,59 +43,69 @@ export function isPiperAvailable(): boolean {
 
 /**
  * Generate speech using Piper TTS
+ * Using a file-based approach for better reliability
  */
 async function generateSpeechWithPiper(text: string): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    if (!isPiperAvailable()) {
-      reject(new ApiError(500, 'Piper TTS is not installed. Please run the setup script.'));
-      return;
-    }
+  if (!isPiperAvailable()) {
+    throw new ApiError(500, 'Piper TTS is not installed. Please run the setup script.');
+  }
 
-    const chunks: Buffer[] = [];
+  // Create unique temp file names
+  const timestamp = Date.now();
+  const inputFile = join(TEMP_DIR, `piper_input_${timestamp}.txt`);
+  const outputFile = join(TEMP_DIR, `piper_output_${timestamp}.wav`);
+
+  try {
+    // Write text to input file
+    await writeFile(inputFile, text, 'utf-8');
+
+    // Run Piper command: piper --model model.onnx --output output.wav < input.txt
+    const command = `"${PIPER_BINARY}" --model "${VOICE_MODEL}" --output "${outputFile}"`;
     
-    // Spawn Piper process
-    // piper --model <model_path> --output_raw | ...
-    const piper = spawn(PIPER_BINARY, [
-      '--model', VOICE_MODEL,
-      '--output-raw'
-    ]);
-
-    // Write text to stdin
-    piper.stdin.write(text);
-    piper.stdin.end();
-
-    // Collect audio data from stdout
-    piper.stdout.on('data', (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
-
-    // Handle errors
-    piper.stderr.on('data', (data: Buffer) => {
-      console.error('Piper stderr:', data.toString());
-    });
-
-    piper.on('error', (error: Error) => {
-      reject(new ApiError(500, `Piper process error: ${error.message}`));
-    });
-
-    piper.on('close', (code: number) => {
-      if (code !== 0) {
-        reject(new ApiError(500, `Piper process exited with code ${code}`));
-        return;
+    // Use file input instead of stdin for better reliability
+    const fullCommand = `cat "${inputFile}" | ${command}`;
+    
+    console.log(`🔧 Running Piper command...`);
+    let stderr = '';
+    try {
+      const result = await execAsync(fullCommand);
+      if (result.stderr) {
+        stderr = result.stderr;
+        if (!stderr.includes('Generated')) {
+          console.log('Piper output:', result.stdout);
+          console.error('Piper errors:', stderr);
+        }
       }
 
-      const audioBuffer = Buffer.concat(chunks);
-      
+      // Check if output file was created
+      if (!existsSync(outputFile)) {
+        throw new ApiError(500, `Piper did not generate output file. ${stderr || 'Unknown error'}`);
+      }
+
+      // Read the generated WAV file
+      const audioBuffer = await readFile(outputFile);
+
       if (audioBuffer.length === 0) {
-        reject(new ApiError(500, 'Piper generated empty audio'));
-        return;
+        throw new ApiError(500, 'Piper generated empty audio file');
       }
 
-      // Convert raw PCM to WAV format
-      const wavBuffer = createWavHeader(audioBuffer);
-      resolve(wavBuffer);
-    });
-  });
+      return audioBuffer;
+    } catch (execError: any) {
+      console.error('Piper generation error:', execError);
+      throw new ApiError(500, `Failed to generate audio with Piper: ${execError.message || execError.stderr || stderr || 'Unknown error'}`);
+    }
+  } catch (error: any) {
+    console.error('Piper generation error:', error);
+    throw new ApiError(500, `Failed to generate audio with Piper: ${error.message}`);
+  } finally {
+    // Clean up temp files
+    try {
+      if (existsSync(inputFile)) await unlink(inputFile);
+      if (existsSync(outputFile)) await unlink(outputFile);
+    } catch (err) {
+      console.warn('Failed to clean up temp files:', err);
+    }
+  }
 }
 
 /**
@@ -135,7 +148,8 @@ function createWavHeader(pcmData: Buffer): Buffer {
  * Generates a single voiceover for multiple scripts and calculates time segments for each
  */
 export async function generateCombinedVoiceover(scripts: string[]): Promise<CombinedAudioResult> {
-  console.time('⏱️ Piper TTS Generation');
+  const timerLabel = `Piper TTS Gen ${Date.now()}`;
+  console.time(timerLabel);
   
   try {
     // Ensure temp directory exists
@@ -160,7 +174,7 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
     const totalWords = wordCounts.reduce((sum, count) => sum + count, 0);
     const totalDuration = estimateAudioDuration(totalWords);
     
-    console.timeEnd('⏱️ Piper TTS Generation');
+    console.timeEnd(timerLabel);
     
     // Calculate time segments based on word count proportions
     const pauseDuration = 0.5;
