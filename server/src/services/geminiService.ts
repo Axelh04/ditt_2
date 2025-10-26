@@ -1,10 +1,12 @@
 import { GoogleGenAI } from '@google/genai';
 import { ApiError } from '../middleware/errorHandler.js';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-if (!GEMINI_API_KEY) {
-  throw new Error('GEMINI_API_KEY environment variable is not set');
+function getGeminiApiKey(): string {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) {
+    throw new ApiError(500, 'GEMINI_API_KEY environment variable is not set');
+  }
+  return GEMINI_API_KEY;
 }
 
 export type SVGState = {
@@ -34,7 +36,7 @@ export type QuizData = {
 export async function generateProcessSVGs(userQuery: string): Promise<ProcessBreakdown> {
   try {
     console.time('⏱️ Gemini API Call');
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: getGeminiApiKey() });
     
     const prompt = `
 You are an expert at breaking down processes into visual stages and creating SVG representations.
@@ -138,7 +140,7 @@ Ensure all SVG content is properly escaped for JSON (use \\" for quotes inside S
 export async function generateQuiz(processData: ProcessBreakdown): Promise<QuizData> {
   try {
     console.time('⏱️ Gemini Quiz Generation');
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+    const ai = new GoogleGenAI({ apiKey: getGeminiApiKey() });
     
     const stagesInfo = processData.stages.map((stage, index) => ({
       stageNumber: stage.stageNumber,

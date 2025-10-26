@@ -31,7 +31,7 @@ export async function generateProcessSVGs(userQuery: string): Promise<ProcessBre
   console.time('⏱️ Process Generation API Call');
   
   try {
-    const data = await apiClient.post<ProcessBreakdown>('/process/generate', {
+    const data = await apiClient.post<ProcessBreakdown>('/api/process/generate', {
       query: userQuery
     });
     
@@ -47,7 +47,7 @@ export async function generateQuiz(processData: ProcessBreakdown): Promise<QuizD
   console.time('⏱️ Quiz Generation API Call');
   
   try {
-    const data = await apiClient.post<QuizData>('/quiz/generate', {
+    const data = await apiClient.post<QuizData>('/api/quiz/generate', {
       processData
     });
     

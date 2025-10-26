@@ -1,11 +1,14 @@
 import axios from 'axios';
 import { ApiError } from '../middleware/errorHandler.js';
 
-const ELEVEN_LABS_API_KEY = process.env.ELEVEN_LABS_API_KEY;
 const ELEVEN_LABS_API_URL = 'https://api.elevenlabs.io/v1';
 
-if (!ELEVEN_LABS_API_KEY) {
-  throw new Error('ELEVEN_LABS_API_KEY environment variable is not set');
+function getElevenLabsApiKey(): string {
+  const ELEVEN_LABS_API_KEY = process.env.ELEVEN_LABS_API_KEY;
+  if (!ELEVEN_LABS_API_KEY) {
+    throw new ApiError(500, 'ELEVEN_LABS_API_KEY environment variable is not set');
+  }
+  return ELEVEN_LABS_API_KEY;
 }
 
 // Using a default voice ID (Rachel - a pleasant female voice)
@@ -59,7 +62,7 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
       {
         headers: {
           'Accept': 'audio/mpeg',
-          'xi-api-key': ELEVEN_LABS_API_KEY,
+          'xi-api-key': getElevenLabsApiKey(),
           'Content-Type': 'application/json',
         },
         responseType: 'arraybuffer'

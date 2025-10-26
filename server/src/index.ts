@@ -1,19 +1,20 @@
+import dotenv from 'dotenv';
+// Load environment variables FIRST before importing anything else
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { processRouter } from './routes/process.js';
 import { voiceoverRouter } from './routes/voiceover.js';
 import { quizRouter } from './routes/quiz.js';
 import { errorHandler } from './middleware/errorHandler.js';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: process.env.CORS_ORIGIN || '*', // Allow all origins in development
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -24,7 +25,7 @@ app.use('/api/voiceover', voiceoverRouter);
 app.use('/api/quiz', quizRouter);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 

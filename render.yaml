@@ -1,0 +1,43 @@
+services:
+  # Backend Express Server
+  - type: web
+    name: ditt-backend
+    runtime: node
+    buildCommand: cd server && npm install && npm run build
+    startCommand: cd server && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: GEMINI_API_KEY
+        sync: false  # You'll add this manually in Render dashboard
+      - key: ELEVENLABS_API_KEY
+        sync: false  # You'll add this manually in Render dashboard
+    healthCheckPath: /api/health
+    plan: free  # Can upgrade to starter ($7/mo) to avoid cold starts
+
+  # Frontend React App
+  - type: web
+    name: ditt-frontend
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: ditt-backend
+          property: url
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+

@@ -149,10 +149,39 @@ npm run build    # Build TypeScript
 npm run start    # Run production build
 ```
 
+## 🚢 Deployment
+
+This application is configured for easy deployment on **Render**:
+
+### One-Click Deployment
+
+1. Push your code to GitHub
+2. Create a new Blueprint on Render
+3. Connect your repository
+4. Render will automatically detect `render.yaml` and deploy both services
+5. Add your API keys as environment variables
+
+For detailed deployment instructions, see [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md).
+
+### What Gets Deployed
+
+- **Frontend**: Static React site (FREE tier)
+- **Backend**: Express API server (FREE tier with limitations)
+- **Cost**: $0/month for development, $7/month recommended for production
+
+### Quick Deploy Checklist
+
+✅ `render.yaml` configuration included  
+✅ Environment variables documented  
+✅ Health check endpoint configured  
+✅ CORS properly configured  
+✅ Production build scripts ready  
+
 ## 📚 Documentation
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) - Detailed architecture and design decisions
 - [SETUP.md](./SETUP.md) - Comprehensive setup and troubleshooting guide
+- [RENDER_DEPLOYMENT.md](./RENDER_DEPLOYMENT.md) - Complete deployment guide for Render
 
 ## 🤝 Contributing
 

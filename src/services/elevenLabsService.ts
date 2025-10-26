@@ -33,7 +33,7 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
         endTime: number;
         duration: number;
       }>;
-    }>('/voiceover/generate', {
+    }>('/api/voiceover/generate', {
       scripts
     });
     
@@ -45,15 +45,39 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
     }
     const audioBlob = new Blob([bytes], { type: 'audio/mpeg' });
     
-    // Get actual duration from audio
+    // Get actual duration from audio file (more accurate than backend estimate)
     const actualDuration = await getActualAudioDuration(audioBlob);
     
     console.timeEnd('⏱️ Combined Voiceover API Call');
     
+    // Recalculate segments based on ACTUAL duration (not backend estimate)
+    // Distribute time proportionally by word count (includes natural pauses)
+    const wordCounts = scripts.map(script => script.split(/\s+/).length);
+    const totalWords = wordCounts.reduce((sum, count) => sum + count, 0);
+    
+    const segments: Array<{ startTime: number; endTime: number; duration: number }> = [];
+    let currentTime = 0;
+    
+    // Simple proportional distribution - no manual pause calculation
+    // The pauses from "... ... " are already in the audio
+    wordCounts.forEach((wordCount, index) => {
+      const segmentDuration = (wordCount / totalWords) * actualDuration;
+      segments.push({
+        startTime: currentTime,
+        endTime: currentTime + segmentDuration,
+        duration: segmentDuration
+      });
+      currentTime += segmentDuration;
+    });
+    
+    console.log('📊 Audio segments:', segments.map((seg, i) => 
+      `Stage ${i + 1}: ${seg.startTime.toFixed(2)}s - ${seg.endTime.toFixed(2)}s (${seg.duration.toFixed(2)}s)`
+    ));
+    
     return {
       audioBlob,
       totalDuration: actualDuration,
-      segments: data.segments
+      segments
     };
   } catch (error) {
     console.error('Error generating combined voiceover:', error);
