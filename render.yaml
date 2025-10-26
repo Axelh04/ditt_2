@@ -3,24 +3,24 @@ services:
   - type: web
     name: ditt-backend
     runtime: node
-    buildCommand: cd server && npm install && npm run build
-    startCommand: cd server && npm run start
+    region: oregon
+    plan: free
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 3001
       - key: GEMINI_API_KEY
-        sync: false  # You'll add this manually in Render dashboard
+        sync: false
       - key: ELEVENLABS_API_KEY
-        sync: false  # You'll add this manually in Render dashboard
+        sync: false
     healthCheckPath: /api/health
-    plan: free  # Can upgrade to starter ($7/mo) to avoid cold starts
 
   # Frontend React App
-  - type: web
+  - type: static
     name: ditt-frontend
-    runtime: static
+    region: oregon
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
