@@ -46,19 +46,36 @@ This method uses the `render.yaml` file to deploy both services at once.
    - Click **"Save Changes"**
    - The service will automatically redeploy
 
-4. **Update CORS Origin (Optional)**
+4. **Update Frontend Environment Variable**
    
-   If you want to restrict CORS to only your frontend:
-   - Add another environment variable to backend:
+   After both services are deployed, update the frontend's backend URL:
+   
+   **For Frontend Service (`ditt-frontend`):**
+   - Go to the frontend service in Render Dashboard
+   - Navigate to **"Environment"** tab
+   - Update the `VITE_API_URL` variable with your actual backend URL:
+     ```
+     VITE_API_URL=https://ditt-backend.onrender.com
+     ```
+   - Or if Render assigned a different URL, use that one
+   - Click **"Save Changes"**
+   - The frontend will automatically redeploy
+
+5. **Update CORS Origin (Recommended)**
+   
+   For security, restrict CORS to only your frontend:
+   - Go back to backend service
+   - Add another environment variable:
      ```
      CORS_ORIGIN=https://ditt-frontend.onrender.com
      ```
-   - Replace with your actual frontend URL
+   - Replace with your actual frontend URL if different
+   - Click **"Save Changes"**
 
-5. **Done!** 🎉
+6. **Done!** 🎉
    - Frontend URL: `https://ditt-frontend.onrender.com`
    - Backend URL: `https://ditt-backend.onrender.com`
-   - The frontend automatically connects to the backend
+   - The frontend now connects to the backend
 
 ### Method 2: Manual Deployment
 
@@ -105,9 +122,9 @@ If you prefer to set up each service manually:
 
 2. **Add Environment Variable**
    ```
-   VITE_API_URL=https://ditt-backend.onrender.com
+   VITE_API_URL=https://your-backend-name.onrender.com
    ```
-   ⚠️ **Important**: Replace with your actual backend URL from step 1
+   ⚠️ **Important**: Replace with your actual backend URL from the Backend Setup step
 
 3. **Configure Rewrites** (for SPA routing)
    - Add rewrite rule:

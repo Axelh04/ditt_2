@@ -25,10 +25,7 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: ditt-backend
-          property: url
+        value: https://ditt-backend.onrender.com
     routes:
       - type: rewrite
         source: /*
