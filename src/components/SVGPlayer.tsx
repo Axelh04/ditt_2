@@ -182,7 +182,6 @@ export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete, onVoic
     <div className="svg-player">
       <SVGDisplay 
         ref={svgDisplayRef}
-        isLoading={isLoading}
       />
       
       <CaptionPanel 

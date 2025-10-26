@@ -1,16 +1,15 @@
 import { useRef, forwardRef, useImperativeHandle } from 'react';
 import { SVGMorpher } from '../../utils/svgMorpher';
 
-interface SVGDisplayProps {
-  isLoading: boolean;
-}
-
 export interface SVGDisplayHandle {
   displayStage: (svg: string, animate: boolean) => void;
   cancel: () => void;
 }
 
-export const SVGDisplay = forwardRef<SVGDisplayHandle, SVGDisplayProps>(({ isLoading }, ref) => {
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface SVGDisplayProps {}
+
+export const SVGDisplay = forwardRef<SVGDisplayHandle, SVGDisplayProps>((_, ref) => {
   const svgDisplayRef = useRef<HTMLDivElement>(null);
   const morpherRef = useRef<SVGMorpher>(new SVGMorpher(1500));
 
@@ -42,14 +41,7 @@ export const SVGDisplay = forwardRef<SVGDisplayHandle, SVGDisplayProps>(({ isLoa
 
   return (
     <div className="svg-viewport">
-      {isLoading ? (
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Generating voiceovers...</p>
-        </div>
-      ) : (
-        <div ref={svgDisplayRef} className="svg-container" />
-      )}
+      <div ref={svgDisplayRef} className="svg-container" />
     </div>
   );
 });

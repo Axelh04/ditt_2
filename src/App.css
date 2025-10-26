@@ -91,7 +91,7 @@ body {
 
 .chat-header {
   text-align: center;
-  margin-bottom: 35px;
+  margin-bottom: 30px;
   transition: margin-bottom 0.3s ease;
 }
 
@@ -111,7 +111,7 @@ body {
 .chat-header h1::after {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: 2px;
   left: 50%;
   transform: translateX(-50%);
   width: 100px;
@@ -241,22 +241,24 @@ body {
   padding: 1rem;
   background: transparent;
   border: 1px solid var(--border);
-  border-right: none;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 1rem;
   font-family: 'Times New Roman', Times, serif;
   text-align: center;
+  margin-left: -1px;
 }
 
-.example-chip:last-child {
-  border-right: 1px solid var(--border);
+.example-chip:first-child {
+  margin-left: 0;
 }
 
 .example-chip:hover {
   border-color: var(--text-primary);
   color: var(--text-primary);
+  position: relative;
+  z-index: 1;
 }
 
 .example-chip:nth-child(1):hover {
@@ -1610,10 +1612,6 @@ body {
 
   .examples-list {
     grid-template-columns: 1fr 1fr;
-  }
-
-  .example-chip {
-    border-right: 1px solid var(--border);
   }
 
   .todo-list {
