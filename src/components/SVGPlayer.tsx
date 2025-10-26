@@ -12,6 +12,8 @@ import { splitIntoClauses, calculateClauseTimings } from '../utils/textProcessin
 interface SVGPlayerProps {
   stages: SVGState[];
   onComplete?: () => void;
+  onVoiceoverStart?: () => void;
+  onVoiceoverComplete?: () => void;
 }
 
 type CombinedAudio = {
@@ -19,7 +21,7 @@ type CombinedAudio = {
   segments: Array<{ startTime: number; endTime: number; duration: number }>;
 };
 
-export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete }) => {
+export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete, onVoiceoverStart, onVoiceoverComplete }) => {
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +47,7 @@ export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete }) => {
     const generateVoiceover = async () => {
       console.log('🎤 Starting voiceover generation...');
       setIsLoading(true);
+      onVoiceoverStart?.();
       
       try {
         const scripts = stages.map(stage => stage.script);
@@ -57,6 +60,7 @@ export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete }) => {
         
         generatedStagesRef.current = stagesKey;
         console.log('✅ Voiceover generation complete and cached');
+        onVoiceoverComplete?.();
       } catch (error) {
         console.error('❌ Error generating combined voiceover:', error);
       } finally {
@@ -65,7 +69,7 @@ export const SVGPlayer: React.FC<SVGPlayerProps> = ({ stages, onComplete }) => {
     };
 
     generateVoiceover();
-  }, [stages]);
+  }, [stages, onVoiceoverStart, onVoiceoverComplete]);
 
   // Display initial SVG
   useEffect(() => {

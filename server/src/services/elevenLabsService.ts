@@ -117,10 +117,50 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
   } catch (error: any) {
     console.error('Error generating combined voiceover:', error);
     
-    if (axios.isAxiosError(error)) {
+    if (axios.isAxiosError(error) && error.response) {
+      // Parse the error response from ElevenLabs
+      let errorMessage = error.message;
+      
+      try {
+        // ElevenLabs returns errors as JSON, but responseType is 'arraybuffer'
+        // so we need to convert the buffer to string first
+        let errorData = error.response.data;
+        
+        if (Buffer.isBuffer(errorData)) {
+          const jsonString = errorData.toString('utf-8');
+          errorData = JSON.parse(jsonString);
+        }
+        
+        // ElevenLabs error format: { detail: { status: "...", message: "..." } }
+        if (errorData?.detail) {
+          const detail = errorData.detail;
+          
+          if (typeof detail === 'string') {
+            errorMessage = detail;
+          } else if (detail.message) {
+            errorMessage = `${detail.status || 'Error'}: ${detail.message}`;
+          } else if (detail.status) {
+            errorMessage = `Status: ${detail.status}`;
+          }
+        } else if (errorData?.message) {
+          errorMessage = errorData.message;
+        } else if (errorData?.error) {
+          errorMessage = errorData.error;
+        }
+        
+        console.error('❌ ElevenLabs API Error:', {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          detail: errorData?.detail,
+          message: errorMessage
+        });
+      } catch (parseError) {
+        console.error('Error parsing ElevenLabs error response:', parseError);
+      }
+      
       throw new ApiError(
-        error.response?.status || 500,
-        `ElevenLabs API error: ${error.response?.data?.message || error.message}`
+        error.response.status || 500,
+        `ElevenLabs API error (${error.response.status}): ${errorMessage}`
       );
     }
     

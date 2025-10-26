@@ -83,14 +83,53 @@ export const QuizSection: React.FC<QuizSectionProps> = ({ processData }) => {
     return (
       <div className="quiz-section">
         <div className="quiz-intro">
-          <h2>Test Your Knowledge</h2>
-          <p>Ready to see how much you've learned about {processData.processName}?</p>
+          <div className="academic-badge">Quiz Time</div>
+          <h2>Ready to Test Your Knowledge?</h2>
+          <p className="quiz-topic">Let's see what you learned about <span className="highlight">{processData.processName}</span></p>
+          
+          <div className="quiz-metrics">
+            <div className="metric-card">
+              <div className="metric-value">{processData.stages.length}</div>
+              <div className="metric-label">Stages</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-value">5-10</div>
+              <div className="metric-label">Questions</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-value">~5</div>
+              <div className="metric-label">Min</div>
+            </div>
+          </div>
+
           <p className="quiz-intro-details">
-            Take this quiz to reinforce your understanding. The questions are based on the stages you just explored.
+            Think you've got it? This quiz will help you remember the key concepts 
+            from each stage. Don't worry—you'll get instant feedback and explanations 
+            for every question, so it's a great way to learn even more.
           </p>
+
+          <div className="quiz-features">
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <span>Get answers explained right away</span>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <span>See the diagrams you studied</span>
+            </div>
+            <div className="feature-item">
+              <span className="feature-icon">✓</span>
+              <span>Track how well you did</span>
+            </div>
+          </div>
+
           <button onClick={handleStartQuiz} className="quiz-start-button">
-            Begin Quiz
+            Start Quiz →
           </button>
+          
+          <p className="academic-note">
+            * Questions generated based on what you just learned
+          </p>
         </div>
       </div>
     );

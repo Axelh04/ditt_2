@@ -92,6 +92,11 @@ body {
 .chat-header {
   text-align: center;
   margin-bottom: 35px;
+  transition: margin-bottom 0.3s ease;
+}
+
+.chat-header:has(:only-child) {
+  margin-bottom: 0;
 }
 
 .chat-header h1 {
@@ -129,7 +134,7 @@ body {
     background-position: 0% 0%;
   }
   100% {
-    background-position: 100% 0%;
+    background-position: 150% 0%;
   }
 }
 
@@ -137,12 +142,14 @@ body {
   color: var(--text-secondary);
   font-size: 1.15rem;
   letter-spacing: 0.01em;
+  animation: fadeIn 0.3s ease-in;
 }
 
 .chat-form {
   margin-bottom: 80px;
   display: flex;
   justify-content: center;
+  animation: fadeIn 0.3s ease-in;
 }
 
 .input-container {
@@ -220,7 +227,6 @@ body {
   margin-bottom: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  visibility: hidden;
 }
 
 .examples-list {
@@ -229,7 +235,6 @@ body {
   gap: 0;
   width: 640px;
   transform: translateX(-1px);
-  visibility: hidden;
 }
 
 .example-chip {
@@ -278,6 +283,198 @@ body {
   font-size: 1rem;
 }
 
+/* Todo List */
+.todo-list {
+  margin-top: 2rem;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--border);
+  background: transparent;
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--background-dark);
+}
+
+.todo-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.todo-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.todo-percentage {
+  font-weight: 500;
+}
+
+.todo-separator {
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.todo-estimate {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.todo-spinner-small {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--border);
+  border-top-color: var(--primary-red);
+  border-right-color: var(--primary-green);
+  border-bottom-color: var(--primary-blue);
+  animation: spin 1.5s linear infinite;
+}
+
+.todo-progress-bar {
+  height: 2px;
+  background: var(--border-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.todo-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, 
+    var(--primary-red) 0%, 
+    var(--primary-green) 50%, 
+    var(--primary-blue) 100%
+  );
+  transition: width 0.1s linear;
+  position: relative;
+  will-change: width;
+}
+
+.todo-progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.todo-items {
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+.todo-item:last-child {
+  border-bottom: none;
+}
+
+.todo-item.pending {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.todo-item.in-progress {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.todo-item.completed {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.todo-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.todo-pending-box {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+}
+
+.todo-progress-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary-green);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+}
+
+.todo-item.completed .todo-icon {
+  color: var(--text-secondary);
+}
+
+.todo-label {
+  flex: 1;
+}
+
 /* Scroll Indicator */
 .scroll-indicator {
   position: absolute;
@@ -321,6 +518,16 @@ body {
   box-sizing: border-box;
   gap: 1.5rem;
   position: relative;
+}
+
+.player-progress-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  max-width: 640px;
+  width: 90%;
 }
 
 .player-header {
@@ -700,49 +907,147 @@ body {
 /* Quiz Intro */
 .quiz-intro {
   text-align: center;
-  max-width: 500px;
+  max-width: 650px;
+}
+
+.academic-badge {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 2rem;
+  font-weight: 400;
 }
 
 .quiz-intro h2 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: var(--text-primary);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.quiz-topic {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+}
+
+.quiz-topic .highlight {
+  color: var(--text-primary);
+  font-style: italic;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+}
+
+.quiz-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding: 2rem 0;
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-value {
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.quiz-intro p {
-  font-size: 1rem;
+.quiz-intro-details {
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  margin-bottom: 0.75rem;
-  line-height: 1.5;
+  margin-bottom: 2rem;
+  letter-spacing: 0.01em;
+  line-height: 1.7;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.quiz-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2.5rem;
+  text-align: left;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
   letter-spacing: 0.01em;
 }
 
-.quiz-intro-details {
+.feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--primary-green);
   font-size: 0.9rem;
-  color: var(--text-muted);
-  margin-bottom: 2.5rem;
-  letter-spacing: 0.01em;
+  flex-shrink: 0;
 }
 
 .quiz-start-button {
-  padding: 1rem 2.5rem;
+  padding: 1.25rem 3rem;
   background: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--text-primary);
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Times New Roman', Times, serif;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  margin-bottom: 2rem;
 }
 
 .quiz-start-button:hover {
-  border-color: var(--text-primary);
-  background: transparent;
+  background: var(--text-primary);
+  color: var(--background-black);
+  transform: translateY(-2px);
+}
+
+.academic-note {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  letter-spacing: 0.01em;
+  margin-top: 1rem;
 }
 
 /* Quiz Loading */
@@ -1311,6 +1616,15 @@ body {
     border-right: 1px solid var(--border);
   }
 
+  .todo-list {
+    max-width: 100%;
+  }
+
+  .todo-item {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+  }
+
   .player-view {
     padding: 1.5rem;
   }
@@ -1356,12 +1670,63 @@ body {
     padding: 2rem 1.5rem;
   }
 
+  .quiz-intro {
+    max-width: 100%;
+  }
+
+  .academic-badge {
+    font-size: 0.65rem;
+    padding: 0.4rem 1rem;
+    margin-bottom: 1.5rem;
+  }
+
   .quiz-intro h2 {
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .quiz-topic {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-metrics {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+  }
+
+  .metric-value {
     font-size: 2rem;
   }
 
-  .quiz-intro p {
-    font-size: 1rem;
+  .metric-label {
+    font-size: 0.7rem;
+  }
+
+  .quiz-intro-details {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .quiz-features {
+    max-width: 100%;
+    margin-bottom: 2rem;
+  }
+
+  .feature-item {
+    font-size: 0.85rem;
+  }
+
+  .quiz-start-button {
+    padding: 1rem 2rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .academic-note {
+    font-size: 0.65rem;
   }
 
   .quiz-question-card {
