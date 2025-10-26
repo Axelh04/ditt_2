@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { ProcessBreakdown } from '../services/geminiService';
-import { generateQuiz, type QuizData, type QuizQuestion } from '../services/geminiService';
+import { generateQuiz, type QuizData } from '../services/geminiService';
 
 interface QuizSectionProps {
   processData: ProcessBreakdown;

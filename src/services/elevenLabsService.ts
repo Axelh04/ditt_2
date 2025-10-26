@@ -60,7 +60,7 @@ export async function generateCombinedVoiceover(scripts: string[]): Promise<Comb
     
     // Simple proportional distribution - no manual pause calculation
     // The pauses from "... ... " are already in the audio
-    wordCounts.forEach((wordCount, index) => {
+    wordCounts.forEach((wordCount) => {
       const segmentDuration = (wordCount / totalWords) * actualDuration;
       segments.push({
         startTime: currentTime,

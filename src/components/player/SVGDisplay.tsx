@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useRef, forwardRef, useImperativeHandle } from 'react';
 import { SVGMorpher } from '../../utils/svgMorpher';
 
 interface SVGDisplayProps {
